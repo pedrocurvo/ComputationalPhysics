@@ -1,0 +1,214 @@
+@startuml Projeto
+
+Interpolator <|-- DataPoints : inheritance
+IntegDeriv <.. MyFunction : uses
+MyFunction <|-- Functor : inheritance
+ODEpoint <|-- Xvar : inheritance
+ODESolver <.. RootTools : uses
+pendulum_p +-- ODEpoint : contains
+pendulum_p +-- RootTools : uses
+
+class DataPoints{
+# {static} TCanvas* : c
+# vector<pair<double,double> > : P
+--
+.. Constructors ..
++DataPoints()
++DataPoints(int,double* ,double* )
++DataPoints(const vector< double>&,const vector<double>&)
++DataPoints(const vector<pair<double,double>>&)
++DataPoints(initializer_list<pair<double,double>>)
+.. Destructor ..
++~DataPoints()
+.. Getters ..
++const vector<pair<double,double>>& GetPoints() const
++void GetGraph(TGraph&);
+.. Draw ..
+{virtual} void Draw();
+.. Friends ..
+<<friend>> ostream& operator<< (ostream&,const DataPoints&);
+}
+
+class Interpolator {
+-vector<double> x
+-vector<double> y
+-map<string,TF1*> MI
+-vector<double> a
+--
+.. Constructors ..
++Interpolator()
++Interpolator(initializer_list<pair<double,double>>)
++Interpolator(int,double*,double*)
++Interpolator(const vector<pair<double,double>>&)
++Interpolator(const vector<double>&,const vector<double>&)
+.. Destructor ..
++~Interpolator()
+.. Interpolation Methods ..
++void Init()
++double InterpolateLagrange(double)
++double InterpolateNewton(double)
++double InterpolateSpline3(double)
++double CosineInterpolate(double)
++double Lagrange(double*,double*)
++double Newton(double*,double*)
++double Spline3(double*,double*)
++double Cosine(double*,double*);
+.. Draw ..
++void Draw(string s)
+}
+
+class Functor{
+#{static} TCanvas *c
+#string name
+--
++Functor(string)
++~Functor()
+{virtual} double operator()(double)
+{virtual} void Draw(double,double,int,string,string)
+}
+
+class IntegDeriv {
+- Functor& F
+--
++IntegDeriv(Functor&)
++~IntegDeriv()
++void Dump(double,double)
+.. Integration Methods ..
++void TrapezoidalRule(double,double,double&,double&,bool)
++void simpsonRule(double,double,double&,double&)
++void MonteCarloNormal(double,double,double&,double&)
++void MonteCarloVonNeumann(double,double,double&,double&,int)
+.. Derivative Methods ..
++double SecondDerivative(double,double)
++double FirstDerivative(double,double)
++double FourthDerivative(double,double)
++double ThirdDerivative(double,double)
+}
+
+
+class MyFunction {
+-function<double(double)> function
+--
++MyFunction(string,function<double(double)>)
++~MyFunction()
+{virtual} double operator()(double)
+}
+
+class ODEpoint{
+- double t
+--
+.. Constructors ..
++ ODEpoint()
++ODEpoint(double,Xvar)
++ODEpoint(double,const vector<double>&)
++ODEpoint(double,initializer_list<double>&)
+.. Setters ..
++void SetODEpoint(double,Xvar)
++void SetODEpoint(double,const initializer_list<double>&)
++void SetODEpoint(double,const vector<double>)
+.. Getter ..
++double& T()
+..Friend..
++ostream& operator<<(ostream&,const ODEpoint&)>>
+}
+class ODESolver {
+-ODEpoint X0
+-vector<function<double(ODEpoint)>> F
+-map<string,vector<ODEpoint>> MS
+-- 
+.. Constructors ..
++ODESolver(const vector<function<double(ODEpoint)>>&)
++ODESolver(const vector<function<double(ODEpoint)>>&,const ODEpoint&)
+.. Setters ..
++void SetInitialPoint(const ODEpoint&)
+.. Solvers ..
++const vector<ODEpoint> StormerVerletSolver(double,double);
++const vector<ODEpoint> Euler(doubledouble);
++const vector<ODEpoint> EulerCromer(doubledouble);
++const vector<ODEpoint> Trapezoidal(doubledouble);
++const vector<ODEpoint> RungeKutta4(doubledouble);
++const vector<ODEpoint> RungeKutta2(doubledouble);
+.. Draw ..
++void Draw(string,string,string,double,double) 
+}
+
+class pendulum_p {
+-double L
+-double m
+-double kf
+-double g
+-Xvar X0
+-map<string,vector<ODEpoint>> MS
+-function<double(ODEpoint)> f[2]
+-vector<ODEpoint> points
+-vector<ODEpoint> points_dimension
+--
+.. Constructors ..
++pendulum()
++pendulum(vector<ODEpoint>,double,double,double)
++pendulum(double,const Xvar&)
++pendulum(double,initializer_list<double>&)
++pendulum(double,double,double)
+.. Destructor ..
++~pendulum()
+.. Getter ..
++const vector<ODEpoint> GetPointsDimension()
+.. Solvers ..
++const vector<ODEpoint> StormerVerletSolver(double,double);
++const vector<ODEpoint> Euler(double,double);
++const vector<ODEpoint> EulerCromer(double,double);
++const vector<ODEpoint> Trapezoidal(double,double);
++const vector<ODEpoint> RungeKutta4(double,double);
++const vector<ODEpoint> RungeKutta2(double,double);
+.. Calculators ..
+double Energy(ODEpoint)
+double Tension(ODEpoint)
+double DissipatedEnergy(double)
+vector<pair<double,double>> Period_Amp()
+vector<pair<double,double>> Period_Time()
+.. Draw ..
++void Draw(string,string,double,double);
++void DrawTeta(TCanvas*,double);
++void DrawTetaVSTetaPoint(TCanvas*,double);
++void DrawTetaANDTetaPoint(TCanvas*,double);
++void DrawEnergy(TCanvas*,double);
++void DrawTension(TCanvas*,double);
++void DrawOTimeVSOAmp(TCanvas*,double);
++void DrawPower(TCanvas*,double);
++void DrawPeriod(TCanvas*,double);
+}
+
+class RootTools{
+--
++RootTools()
++~RootTools()
++{static} void TDrawVector(double,double,double)
++{static} void TDrawVector(double,double)
++{static} void CanvasUpdater(TCanvas*,bool,string)
++{static} void CanvasUpdater(TCanvas,bool,string)
+}
+
+class Xvar{
+#vector<double> x
+--
+.. Constructors ..
++Xvar()
++Xvar(int)
++Xvar(vector<double>)
++Xvar(const initializer_list<double>&)
+.. Destructor ..
++~Xvar()
+.. Copy Constructor ..
+Xvar(const Xvar&)
+.. Operators ..
+Xvar& operator=(const Xvar&)
+Xvar operator+(const Xvar&)
+double& operator[](int)
+.. Getter ..
+vector<double>& X()
+.. Friends ..
+Xvar operator*(double,const Xvar&)
+ostream& operator<<(ostream&,const Xvar&)
+}
+
+@enduml
